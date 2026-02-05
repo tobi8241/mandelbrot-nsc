@@ -1,20 +1,16 @@
-"""
+""""
 Mandelbrot Set Generator
-Author : [ Your Name ]
+Author : [ Tobias Jagd ]
 Course : Numerical Scientific Computing 2026
 """
-def f(x):
-"""
-Example function .
-Parameters
-----------
-x : float
-Input value
-Returns
--------
-float
-Output value
-"""
-# TODO : Implement the algorithm
-pass
-#commit test
+import numpy as np
+import matplotlib.pyplot as plt
+
+def mandelbrot_point (c, max_iter):
+    """Calculate the number of iterations for a point in the Mandelbrot set."""
+    z = 0
+    for n in range(max_iter):
+        z = z*z + c
+        if abs(z) > 2:
+            return n
+    return max_iter
