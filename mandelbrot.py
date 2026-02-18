@@ -39,3 +39,10 @@ if __name__ == "__main__":
 
     print(grid)
     print(f"Computation took {elapsed:.3f} seconds")
+
+    #plot
+    plt.imshow(grid, cmap="hot", origin="lower")
+    plt.colorbar(label="Iteration count")
+    plt.title("Mandelbrot Set (naive)")
+    plt.savefig("mandelbrot_naive.png")
+    plt.show() 
