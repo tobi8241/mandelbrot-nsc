@@ -82,6 +82,7 @@ def compute_numpy_mandelbrot_grid(xmin, xmax, ymin, ymax, width, height, max_ite
         
 
 if __name__ == "__main__":
+    """
     n = 4000
     A = np.random.rand(n, n)
 
@@ -94,17 +95,24 @@ if __name__ == "__main__":
     print("\nFortran-order array (column-major)")
     t_row_f, _ = benchmark(row_sums, A_f)
     t_col_f, _ = benchmark(col_sums, A_f)
-"""
+    """
+
+    """
     start = time.time()
     grid = compute_numpy_mandelbrot_grid(-2, 1, -1.5, 1.5, 1024, 1024, 100)
     elapsed = time.time() - start
-
+    """
+    
+    """
     print(grid)
     print(f"Computation took {elapsed:.3f} seconds")
+    """
 
+    t , M = benchmark ( compute_naive_mandelbrot_grid , -2, 1, -1.5 , 1.5 , 1024 , 1024 , 100)
     t , M = benchmark ( compute_numpy_mandelbrot_grid , -2, 1, -1.5 , 1.5 , 1024 , 1024 , 100)
 
     # --- correctness check ---
+    """
     naive_result = compute_naive_mandelbrot_grid(-2, 1, -1.5, 1.5, 1024, 1024, 100)
 
     numpy_result = compute_numpy_mandelbrot_grid(-2, 1, -1.5, 1.5, 1024, 1024, 100)
@@ -113,13 +121,17 @@ if __name__ == "__main__":
         print("Results match!")
     else:
         print("Results differ!")
+    """
 
     # Check where they differ :
+    """
     diff = np.abs(naive_result - numpy_result)
     print(f"Max difference : {diff.max()}")
     print(f"Different pixels : {(diff > 0).sum()}")
+    """
 
     #plot
+    """
     plt.imshow(naive_result, cmap="hot", origin="lower")
     plt.colorbar(label="Iteration count")
     plt.title("Mandelbrot Set (naive)")
@@ -131,4 +143,5 @@ if __name__ == "__main__":
     plt.title("Mandelbrot Set (NumPy)")
     plt.savefig("mandelbrot_numpy.png")
     plt.show() 
-"""
+    """
+
