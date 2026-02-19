@@ -5,7 +5,22 @@ Course : Numerical Scientific Computing 2026
 """
 import numpy as np
 import matplotlib.pyplot as plt
-import time
+import time , statistics
+
+
+def benchmark (func, *args, n_runs =3) :
+    """ Time func , return median of n_runs . """
+    times = []
+    for _ in range(n_runs):
+        t0 = time.perf_counter()
+        result = func(*args)
+        times.append(time.perf_counter() - t0)
+    median_t = statistics.median(times)
+    print(f" Median: {median_t:.4f}s "
+           f"( min={min(times):.4f}, max ={max(times):.4f})")
+    return median_t , result
+
+
 
 def mandelbrot_point (c, max_iter):
     """Calculate the number of iterations for a point in the Mandelbrot set."""
@@ -16,7 +31,7 @@ def mandelbrot_point (c, max_iter):
             return n
     return max_iter
 
-def compute_mandelbrot_grid(xmin, xmax, ymin, ymax, width, height, max_iter):
+def compute_naive_mandelbrot_grid(xmin, xmax, ymin, ymax, width, height, max_iter):
     """Compute the mandelbrot grid for given region"""
     x = np.linspace(xmin, xmax, width)
     y = np.linspace(ymin, ymax, height)
@@ -30,15 +45,30 @@ def compute_mandelbrot_grid(xmin, xmax, ymin, ymax, width, height, max_iter):
             counts[j, i] = mandelbrot_point(c, max_iter)
     return counts
 
+def compute_numpy_mandelbrot_grid(xmin, xmax, ymin, ymax, width, height, max_iter):
+    """Vectorized Mandelbrot using NumPy arrays."""
+
+    # Create complex grid 
+    x = np.linspace(xmin, xmax, width)
+    y = np.linspace(ymin, ymax, height)
+    X, Y = np.meshgrid(x, y)
+    C = X + 1j * Y
+    return C
+
 if __name__ == "__main__":
-    print(mandelbrot_point(0,100))
+
+    C = compute_numpy_mandelbrot_grid(-2, 1, -1.5, 1.5, 1024, 1024, 100)
+    print (f"Shape : {C.shape}")
+    print (f"Type : {C.dtype}")
 
     start = time.time()
-    grid = compute_mandelbrot_grid(-2, 1, -1.5, 1.5, 1024, 1024, 100)
+    grid = compute_naive_mandelbrot_grid(-2, 1, -1.5, 1.5, 1024, 1024, 100)
     elapsed = time.time() - start
 
     print(grid)
     print(f"Computation took {elapsed:.3f} seconds")
+
+    t , M = benchmark ( compute_naive_mandelbrot_grid , -2, 1, -1.5 , 1.5 , 1024 , 1024 , 100)
 
     #plot
     plt.imshow(grid, cmap="hot", origin="lower")
