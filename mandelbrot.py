@@ -7,6 +7,19 @@ import numpy as np
 import matplotlib.pyplot as plt
 import time , statistics
 
+def row_sums(A):
+        N = A.shape[0]
+        s = 0.0
+        for i in range(N):
+            s += np.sum(A[i, :])
+        return s
+    
+def col_sums(A):
+        N = A.shape[1]
+        s = 0.0
+        for j in range(N):
+            s += np.sum(A[:, j])
+        return s
 
 def benchmark (func, *args, n_runs =3) :
     """ Time func , return median of n_runs . """
@@ -63,10 +76,25 @@ def compute_numpy_mandelbrot_grid(xmin, xmax, ymin, ymax, width, height, max_ite
         Z[mask] = Z[mask]**2 + C[mask]
         M[mask] += 1
     return M
+
+
+
         
 
 if __name__ == "__main__":
+    n = 4000
+    A = np.random.rand(n, n)
 
+    print("C-order array (row-major)")
+    t_row, _ = benchmark(row_sums, A)
+    t_col, _ = benchmark(col_sums, A)
+
+    A_f = np.asfortranarray(A)
+
+    print("\nFortran-order array (column-major)")
+    t_row_f, _ = benchmark(row_sums, A_f)
+    t_col_f, _ = benchmark(col_sums, A_f)
+"""
     start = time.time()
     grid = compute_numpy_mandelbrot_grid(-2, 1, -1.5, 1.5, 1024, 1024, 100)
     elapsed = time.time() - start
@@ -103,3 +131,4 @@ if __name__ == "__main__":
     plt.title("Mandelbrot Set (NumPy)")
     plt.savefig("mandelbrot_numpy.png")
     plt.show() 
+"""
