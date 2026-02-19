@@ -53,26 +53,31 @@ def compute_numpy_mandelbrot_grid(xmin, xmax, ymin, ymax, width, height, max_ite
     y = np.linspace(ymin, ymax, height)
     X, Y = np.meshgrid(x, y)
     C = X + 1j * Y
-    return C
+    
+    Z = np.zeros_like(C, dtype=np.complex128)
+    M = np.zeros(C.shape, dtype=int)
+
+    for _ in range(max_iter):
+        mask = np.abs(Z) <= 2
+        Z[mask] = Z[mask]**2 + C[mask]
+        M[mask] += 1
+    return M
+        
 
 if __name__ == "__main__":
 
-    C = compute_numpy_mandelbrot_grid(-2, 1, -1.5, 1.5, 1024, 1024, 100)
-    print (f"Shape : {C.shape}")
-    print (f"Type : {C.dtype}")
-
     start = time.time()
-    grid = compute_naive_mandelbrot_grid(-2, 1, -1.5, 1.5, 1024, 1024, 100)
+    grid = compute_numpy_mandelbrot_grid(-2, 1, -1.5, 1.5, 1024, 1024, 100)
     elapsed = time.time() - start
 
     print(grid)
     print(f"Computation took {elapsed:.3f} seconds")
 
-    t , M = benchmark ( compute_naive_mandelbrot_grid , -2, 1, -1.5 , 1.5 , 1024 , 1024 , 100)
+    t , M = benchmark ( compute_numpy_mandelbrot_grid , -2, 1, -1.5 , 1.5 , 1024 , 1024 , 100)
 
     #plot
     plt.imshow(grid, cmap="hot", origin="lower")
     plt.colorbar(label="Iteration count")
-    plt.title("Mandelbrot Set (naive)")
-    plt.savefig("mandelbrot_naive.png")
+    plt.title("Mandelbrot Set (numpy)")
+    plt.savefig("mandelbrot_numpy.png")
     plt.show() 
