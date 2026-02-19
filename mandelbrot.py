@@ -26,9 +26,9 @@ def mandelbrot_point (c, max_iter):
     """Calculate the number of iterations for a point in the Mandelbrot set."""
     z = 0
     for n in range(max_iter):
-        z = z*z + c
-        if abs(z) > 2:
+        if abs(z) >= 2:
             return n
+        z = z*z + c
     return max_iter
 
 def compute_naive_mandelbrot_grid(xmin, xmax, ymin, ymax, width, height, max_iter):
@@ -54,6 +54,7 @@ def compute_numpy_mandelbrot_grid(xmin, xmax, ymin, ymax, width, height, max_ite
     X, Y = np.meshgrid(x, y)
     C = X + 1j * Y
     
+
     Z = np.zeros_like(C, dtype=np.complex128)
     M = np.zeros(C.shape, dtype=int)
 
@@ -75,9 +76,30 @@ if __name__ == "__main__":
 
     t , M = benchmark ( compute_numpy_mandelbrot_grid , -2, 1, -1.5 , 1.5 , 1024 , 1024 , 100)
 
+    # --- correctness check ---
+    naive_result = compute_naive_mandelbrot_grid(-2, 1, -1.5, 1.5, 1024, 1024, 100)
+
+    numpy_result = compute_numpy_mandelbrot_grid(-2, 1, -1.5, 1.5, 1024, 1024, 100)
+
+    if np.allclose(naive_result, numpy_result):
+        print("Results match!")
+    else:
+        print("Results differ!")
+
+    # Check where they differ :
+    diff = np.abs(naive_result - numpy_result)
+    print(f"Max difference : {diff.max()}")
+    print(f"Different pixels : {(diff > 0).sum()}")
+
     #plot
-    plt.imshow(grid, cmap="hot", origin="lower")
+    plt.imshow(naive_result, cmap="hot", origin="lower")
     plt.colorbar(label="Iteration count")
-    plt.title("Mandelbrot Set (numpy)")
+    plt.title("Mandelbrot Set (naive)")
+    plt.savefig("mandelbrot_naive.png")
+    plt.show() 
+
+    plt.imshow(numpy_result, cmap="hot", origin="lower")
+    plt.colorbar(label="Iteration count")
+    plt.title("Mandelbrot Set (NumPy)")
     plt.savefig("mandelbrot_numpy.png")
     plt.show() 
