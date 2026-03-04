@@ -128,6 +128,17 @@ def mandelbrot_naive_numba(xmin, xmax, ymin, ymax, width, height, max_iter=100):
                  n += 1
              results[i, j] = n
      return results
+
+@njit
+def mandelbrot_numba_typed(xmin, xmax, ymin, ymax, width, height, max_iter=100, dtype=np.float64):
+     x = np.linspace(xmin, xmax, width).astype(dtype)
+     y = np.linspace(ymin, ymax, height).astype(dtype)
+     results = np.zeros((height, width), dtype=np.int32)
+     for i in range(height):
+         for j in range(width):
+             c = x[j] + 1j * y[i]
+             results[i, j] = mandelbrot_point_numba(c, max_iter)
+     return results
                  
 
 
@@ -135,6 +146,7 @@ def mandelbrot_naive_numba(xmin, xmax, ymin, ymax, width, height, max_iter=100):
 if __name__ == "__main__":
     
     # Benchmarking
+    """
     _ = mandelbrot_naive_numba(-2, 1, -1.5, 1.5, 1024, 1024, 100) # warmup
 
     t_naive = benchmark(mandelbrot_naive, -2, 1, -1.5, 1.5, 1024, 1024, 100)
@@ -144,6 +156,12 @@ if __name__ == "__main__":
     print(f"Naive : {t_naive:.3f}s")
     print(f"NumPy : {t_numpy:.3f}s ({t_naive/t_numpy:.1f}x)")
     print(f"Numba : {t_numba:.3f}s ({t_naive/t_numba:.1f}x)")
+    """
+    for dtype in [np.float32, np.float64]:
+         _ = mandelbrot_numba_typed(-2, 1, -1.5, 1.5, 1024, 1024, 100, dtype=dtype) # warmup
+         t0 = time.perf_counter()
+         mandelbrot_numba_typed(-2, 1, -1.5, 1.5, 1024, 1024, 100, dtype=dtype)
+         print(f"Numba with {dtype} : {time.perf_counter() - t0:.3f}s")
 
     # correctness check
     """
