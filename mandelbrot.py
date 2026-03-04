@@ -157,11 +157,13 @@ if __name__ == "__main__":
     print(f"NumPy : {t_numpy:.3f}s ({t_naive/t_numpy:.1f}x)")
     print(f"Numba : {t_numba:.3f}s ({t_naive/t_numba:.1f}x)")
     """
+    """
     for dtype in [np.float32, np.float64]:
          _ = mandelbrot_numba_typed(-2, 1, -1.5, 1.5, 1024, 1024, 100, dtype=dtype) # warmup
          t0 = time.perf_counter()
          mandelbrot_numba_typed(-2, 1, -1.5, 1.5, 1024, 1024, 100, dtype=dtype)
          print(f"Numba with {dtype} : {time.perf_counter() - t0:.3f}s")
+    """
 
     # correctness check
     """
@@ -183,6 +185,27 @@ if __name__ == "__main__":
     """
 
     #plot
+
+    r32 = mandelbrot_numba_typed(-0.8, -0.7, 0.05, 0.15, 1024, 1024, dtype=np.float32)
+    r64 = mandelbrot_numba_typed(-0.8, -0.7, 0.05, 0.15, 1024, 1024, dtype=np.float64)
+
+    fig, axes = plt.subplots(1, 2, figsize=(10, 4))
+
+    # float32
+    im1 = axes[0].imshow(r32, cmap="hot", origin="lower")
+    axes[0].set_title("Mandelbrot Set (float32)")
+    axes[0].axis("off")
+    fig.colorbar(im1, ax=axes[0], label="Iteration count")
+
+    # float64 reference
+    im2 = axes[1].imshow(r64, cmap="hot", origin="lower")
+    axes[1].set_title("Mandelbrot Set (float64 reference)")
+    axes[1].axis("off")
+    fig.colorbar(im2, ax=axes[1], label="Iteration count")
+
+    plt.savefig("precision_comparison.png", dpi=150)
+    plt.show()
+
     """
     plt.imshow(naive_result, cmap="hot", origin="lower")
     plt.colorbar(label="Iteration count")
