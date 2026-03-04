@@ -5,7 +5,7 @@ Course : Numerical Scientific Computing 2026
 """
 import numpy as np
 import matplotlib.pyplot as plt
-import time , statistics
+import time , statistics , cProfile , pstats
 
 def row_sums(A):
         N = A.shape[0]
@@ -108,9 +108,11 @@ if __name__ == "__main__":
     print(f"Computation took {elapsed:.3f} seconds")
     """
 
+    """
     t , M = benchmark ( compute_naive_mandelbrot_grid , -2, 1, -1.5 , 1.5 , 1024 , 1024 , 100)
     t , M = benchmark ( compute_numpy_mandelbrot_grid , -2, 1, -1.5 , 1.5 , 1024 , 1024 , 100)
-
+    """
+    
     # --- correctness check ---
     """
     naive_result = compute_naive_mandelbrot_grid(-2, 1, -1.5, 1.5, 1024, 1024, 100)
@@ -144,4 +146,15 @@ if __name__ == "__main__":
     plt.savefig("mandelbrot_numpy.png")
     plt.show() 
     """
+    #Profiling
+
+    cProfile.run( 'compute_naive_mandelbrot_grid(-2, 1, -1.5, 1.5, 512, 512, 100)', 'naive_profile.prof' )
+    cProfile.run( 'compute_numpy_mandelbrot_grid(-2, 1, -1.5, 1.5, 512, 512, 100)', 'numpy_profile.prof' )
+
+    for name in ('naive_profile.prof', 'numpy_profile.prof'):
+         stats = pstats.Stats(name)
+         stats.strip_dirs()     #removes paths
+         stats.sort_stats('cumulative')
+         stats.print_stats(10)  
+
 
