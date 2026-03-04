@@ -5,7 +5,7 @@ Course : Numerical Scientific Computing 2026
 """
 import numpy as np
 import matplotlib.pyplot as plt
-import time , statistics , cProfile , pstats
+import time , statistics 
 
 def row_sums(A):
         N = A.shape[0]
@@ -34,9 +34,9 @@ def benchmark (func, *args, n_runs =3) :
     return median_t , result
 
 
-
+"""
 def mandelbrot_point (c, max_iter):
-    """Calculate the number of iterations for a point in the Mandelbrot set."""
+    Calculate the number of iterations for a point in the Mandelbrot set.
     z = 0
     for n in range(max_iter):
         if abs(z) >= 2:
@@ -45,7 +45,7 @@ def mandelbrot_point (c, max_iter):
     return max_iter
 
 def compute_naive_mandelbrot_grid(xmin, xmax, ymin, ymax, width, height, max_iter):
-    """Compute the mandelbrot grid for given region"""
+    Compute the mandelbrot grid for given region
     x = np.linspace(xmin, xmax, width)
     y = np.linspace(ymin, ymax, height)
 
@@ -57,6 +57,24 @@ def compute_naive_mandelbrot_grid(xmin, xmax, ymin, ymax, width, height, max_ite
             c = complex(x[i], y[j])
             counts[j, i] = mandelbrot_point(c, max_iter)
     return counts
+"""
+@profile
+def mandelbrot_naive(xmin, xmax, ymin, ymax, width, height, max_iter=100):
+     x = np.linspace(xmin, xmax, width)
+     y = np.linspace(ymin, ymax, height)
+     results = np.zeros((height, width), dtype=int)
+     for i in range(height):
+         for j in range(width):
+             c = x[j] + 1j * y[i]
+             z = 0
+             for n in range(max_iter):
+                 if abs(z) > 2:
+                     results[i, j] = n
+                     break
+                 z = z*z + c
+             else:
+                results[i, j] = max_iter
+     return results
 
 def compute_numpy_mandelbrot_grid(xmin, xmax, ymin, ymax, width, height, max_iter):
     """Vectorized Mandelbrot using NumPy arrays."""
@@ -82,6 +100,7 @@ def compute_numpy_mandelbrot_grid(xmin, xmax, ymin, ymax, width, height, max_ite
         
 
 if __name__ == "__main__":
+    mandelbrot_naive(-2, 1, -1.5, 1.5, 512, 512, 100)
     """
     n = 4000
     A = np.random.rand(n, n)
@@ -148,6 +167,7 @@ if __name__ == "__main__":
     """
     #Profiling
 
+    """
     cProfile.run( 'compute_naive_mandelbrot_grid(-2, 1, -1.5, 1.5, 512, 512, 100)', 'naive_profile.prof' )
     cProfile.run( 'compute_numpy_mandelbrot_grid(-2, 1, -1.5, 1.5, 512, 512, 100)', 'numpy_profile.prof' )
 
@@ -156,5 +176,5 @@ if __name__ == "__main__":
          stats.strip_dirs()     #removes paths
          stats.sort_stats('cumulative')
          stats.print_stats(10)  
-
+    """
 
