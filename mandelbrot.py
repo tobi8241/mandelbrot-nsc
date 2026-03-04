@@ -135,15 +135,15 @@ def mandelbrot_naive_numba(xmin, xmax, ymin, ymax, width, height, max_iter=100):
 if __name__ == "__main__":
     
     # Benchmarking
-    _ = mandelbrot_hybrid(-2, 1, -1.5, 1.5, 1024, 1024, 100) # warmup
     _ = mandelbrot_naive_numba(-2, 1, -1.5, 1.5, 1024, 1024, 100) # warmup
 
-    t_hybrid = benchmark(mandelbrot_hybrid, -2, 1, -1.5, 1.5, 1024, 1024, 100)
-    t_full = benchmark(mandelbrot_naive_numba, -2, 1, -1.5, 1.5, 1024, 1024, 100)
+    t_naive = benchmark(mandelbrot_naive, -2, 1, -1.5, 1.5, 1024, 1024, 100)
+    t_numpy = benchmark(compute_numpy_mandelbrot_grid, -2, 1, -1.5, 1.5, 1024, 1024, 100)
+    t_numba = benchmark(mandelbrot_naive_numba, -2, 1, -1.5, 1.5, 1024, 1024, 100)
 
-    print(f"Hybrid: {t_hybrid:.3f} seconds")
-    print(f"Fully compiled: {t_full:.3f} seconds")
-    print(f"ratio: {t_hybrid / t_full:.1f}x")
+    print(f"Naive : {t_naive:.3f}s")
+    print(f"NumPy : {t_numpy:.3f}s ({t_naive/t_numpy:.1f}x)")
+    print(f"Numba : {t_numba:.3f}s ({t_naive/t_numba:.1f}x)")
 
     # correctness check
     """
