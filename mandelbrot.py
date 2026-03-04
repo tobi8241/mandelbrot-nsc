@@ -3,6 +3,7 @@ Mandelbrot Set Generator
 Author : [ Tobias Jagd ]
 Course : Numerical Scientific Computing 2026
 """
+from numba import njit
 import numpy as np
 import matplotlib.pyplot as plt
 import time , statistics 
@@ -21,22 +22,20 @@ def col_sums(A):
             s += np.sum(A[:, j])
         return s
 
-def benchmark (func, *args, n_runs =3) :
+def benchmark (func, *args, n_runs =5):
     """ Time func , return median of n_runs . """
+    func(*args)  # warmup
     times = []
     for _ in range(n_runs):
         t0 = time.perf_counter()
-        result = func(*args)
+        func(*args)
         times.append(time.perf_counter() - t0)
-    median_t = statistics.median(times)
-    print(f" Median: {median_t:.4f}s "
-           f"( min={min(times):.4f}, max ={max(times):.4f})")
-    return median_t , result
+    return statistics.median(times)
 
 
 """
 def mandelbrot_point (c, max_iter):
-    Calculate the number of iterations for a point in the Mandelbrot set.
+    #Calculate the number of iterations for a point in the Mandelbrot set.
     z = 0
     for n in range(max_iter):
         if abs(z) >= 2:
@@ -45,7 +44,7 @@ def mandelbrot_point (c, max_iter):
     return max_iter
 
 def compute_naive_mandelbrot_grid(xmin, xmax, ymin, ymax, width, height, max_iter):
-    Compute the mandelbrot grid for given region
+    #Compute the mandelbrot grid for given region
     x = np.linspace(xmin, xmax, width)
     y = np.linspace(ymin, ymax, height)
 
@@ -58,7 +57,7 @@ def compute_naive_mandelbrot_grid(xmin, xmax, ymin, ymax, width, height, max_ite
             counts[j, i] = mandelbrot_point(c, max_iter)
     return counts
 """
-@profile
+
 def mandelbrot_naive(xmin, xmax, ymin, ymax, width, height, max_iter=100):
      x = np.linspace(xmin, xmax, width)
      y = np.linspace(ymin, ymax, height)
@@ -95,44 +94,58 @@ def compute_numpy_mandelbrot_grid(xmin, xmax, ymin, ymax, width, height, max_ite
         M[mask] += 1
     return M
 
+@njit
+def mandelbrot_point_numba(c, max_iter=100):
+     z = 0j
+     for n in range(max_iter):
+          if z.real*z.real + z.imag*z.imag > 4.0:
+               return n
+          z = z*z + c
+     return max_iter
+
+def mandelbrot_hybrid(xmin, xmax, ymin, ymax, width, height, max_iter=100):
+     x = np.linspace(xmin, xmax, width)
+     y = np.linspace(ymin, ymax, height)
+     results = np.zeros((height, width), dtype=np.int32)
+     for i in range(height):
+         for j in range(width):
+             c = x[j] + 1j * y[i]
+             results[i, j] = mandelbrot_point_numba(c, max_iter)
+     return results
+
+@njit
+def mandelbrot_naive_numba(xmin, xmax, ymin, ymax, width, height, max_iter=100):
+     x = np.linspace(xmin, xmax, width)
+     y = np.linspace(ymin, ymax, height)
+     results = np.zeros((height, width), dtype=np.int32)
+     for i in range(height):
+         for j in range(width):
+             c = x[j] + 1j * y[i]
+             z = 0j
+             n = 0
+             while n < max_iter and (z.real*z.real + z.imag*z.imag) <= 4.0:
+                 z = z*z + c
+                 n += 1
+             results[i, j] = n
+     return results
+                 
 
 
-        
 
 if __name__ == "__main__":
-    mandelbrot_naive(-2, 1, -1.5, 1.5, 512, 512, 100)
-    """
-    n = 4000
-    A = np.random.rand(n, n)
-
-    print("C-order array (row-major)")
-    t_row, _ = benchmark(row_sums, A)
-    t_col, _ = benchmark(col_sums, A)
-
-    A_f = np.asfortranarray(A)
-
-    print("\nFortran-order array (column-major)")
-    t_row_f, _ = benchmark(row_sums, A_f)
-    t_col_f, _ = benchmark(col_sums, A_f)
-    """
-
-    """
-    start = time.time()
-    grid = compute_numpy_mandelbrot_grid(-2, 1, -1.5, 1.5, 1024, 1024, 100)
-    elapsed = time.time() - start
-    """
     
-    """
-    print(grid)
-    print(f"Computation took {elapsed:.3f} seconds")
-    """
+    # Benchmarking
+    _ = mandelbrot_hybrid(-2, 1, -1.5, 1.5, 1024, 1024, 100) # warmup
+    _ = mandelbrot_naive_numba(-2, 1, -1.5, 1.5, 1024, 1024, 100) # warmup
 
-    """
-    t , M = benchmark ( compute_naive_mandelbrot_grid , -2, 1, -1.5 , 1.5 , 1024 , 1024 , 100)
-    t , M = benchmark ( compute_numpy_mandelbrot_grid , -2, 1, -1.5 , 1.5 , 1024 , 1024 , 100)
-    """
-    
-    # --- correctness check ---
+    t_hybrid = benchmark(mandelbrot_hybrid, -2, 1, -1.5, 1.5, 1024, 1024, 100)
+    t_full = benchmark(mandelbrot_naive_numba, -2, 1, -1.5, 1.5, 1024, 1024, 100)
+
+    print(f"Hybrid: {t_hybrid:.3f} seconds")
+    print(f"Fully compiled: {t_full:.3f} seconds")
+    print(f"ratio: {t_hybrid / t_full:.1f}x")
+
+    # correctness check
     """
     naive_result = compute_naive_mandelbrot_grid(-2, 1, -1.5, 1.5, 1024, 1024, 100)
 
